@@ -1,9 +1,7 @@
 package client
 
 import (
-	"bufio"
 	"fmt"
-	"os"
 
 	"github.com/chzyer/readline"
 )
@@ -44,14 +42,8 @@ func (c *Client) StartCLI() {
 			return
 		}
 
-		fmt.Fprintln(c.conn, line)
+		data, err := c.Queryf("%s\n", line)
 
-		message, err := bufio.NewReader(c.conn).ReadString('\n')
-
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Couldn't read data: %v\n", err)
-		}
-
-		fmt.Print(message)
+		fmt.Printf("%s\n", data)
 	}
 }

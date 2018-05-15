@@ -15,6 +15,6 @@ var connectCmd = &cobra.Command{
 	Short: "Connect to a blazedb server",
 	Run: func(cmd *cobra.Command, args []string) {
 		client := client.New(args[0])
-		client.Start()
+		client.StartCLI()
 	},
 }

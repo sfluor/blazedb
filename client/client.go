@@ -1,12 +1,9 @@
 package client
 
 import (
-	"bufio"
 	"fmt"
 	"net"
 	"os"
-
-	"github.com/chzyer/readline"
 )
 
 type Client struct {
@@ -22,31 +19,4 @@ func New(addr string) *Client {
 	}
 
 	return &Client{conn}
-}
-
-func (c *Client) Start() {
-	rl, err := readline.New(">>> ")
-	if err != nil {
-		panic(err)
-	}
-
-	defer rl.Close()
-	defer c.conn.Close()
-
-	for {
-		line, err := rl.Readline()
-
-		if err != nil {
-			break
-		}
-		fmt.Fprintln(c.conn, line)
-
-		message, err := bufio.NewReader(c.conn).ReadString('\n')
-
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Couldn't read data: %v\n", err)
-		}
-
-		fmt.Print(message)
-	}
 }

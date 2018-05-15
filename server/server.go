@@ -29,6 +29,7 @@ type command struct {
 }
 
 type Server struct {
+	UP       bool
 	ln       net.Listener
 	db       *database
 	commands chan *command
@@ -60,26 +61,36 @@ func New(conf *Config) *Server {
 		lg.SetLevel(logrus.DebugLevel)
 	}
 
-	return &Server{ln, newDatabase(), make(chan *command, conf.MaxQueueSize), conf, lg}
+	return &Server{false, ln, newDatabase(), make(chan *command, conf.MaxQueueSize), conf, lg}
 }
 
 func (srv *Server) Start() {
-	fmt.Printf("Starting a blazedb server on port %v\n", srv.conf.Port)
+	fmt.Printf("Starting a blazedb server on port %v\n", srv.GetPort())
 
 	srv.loadState()
 
 	go srv.handleCommands()
 	go srv.handleDumps()
 
+	srv.UP = true
 	for {
 		conn, err := srv.ln.Accept()
 
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Couldn't accept the tcp connection: %v\n", err)
+		} else {
+			go srv.handleConnection(conn)
 		}
-
-		go srv.handleConnection(conn)
 	}
+}
+
+func (srv *Server) Stop() {
+	srv.ln.Close()
+	srv.UP = false
+}
+
+func (srv *Server) GetPort() int {
+	return srv.ln.Addr().(*net.TCPAddr).Port
 }
 
 func (cmd *command) answer(data []byte, err error) {

@@ -33,6 +33,10 @@ func (c *Client) read() ([]byte, error) {
 		return nil, fmt.Errorf("Couldn't read data: %v", err)
 	}
 
+	if bytes.Contains(data, []byte("Error:")) {
+		return nil, fmt.Errorf("%s", data)
+	}
+
 	return bytes.TrimSpace(data), err
 }
 

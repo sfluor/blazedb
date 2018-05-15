@@ -14,10 +14,11 @@ import (
 )
 
 const (
-	SET    = "set"
-	GET    = "get"
-	UPDATE = "update"
-	DELETE = "delete"
+	SET     = "set"
+	GET     = "get"
+	UPDATE  = "update"
+	DELETE  = "delete"
+	SUCCESS = "success"
 )
 
 type command struct {
@@ -112,7 +113,7 @@ func (srv *Server) handleCommands() {
 			if err != nil {
 				cmd.client.Write([]byte(err.Error() + "\n"))
 			} else {
-				cmd.client.Write([]byte("success\n"))
+				cmd.client.Write([]byte(SUCCESS + "\n"))
 			}
 
 		case UPDATE:
@@ -128,7 +129,7 @@ func (srv *Server) handleCommands() {
 			if err != nil {
 				cmd.client.Write([]byte(err.Error() + "\n"))
 			} else {
-				cmd.client.Write([]byte("success\n"))
+				cmd.client.Write([]byte(SUCCESS + "\n"))
 			}
 		case DELETE:
 			err := srv.db.delete(cmd.payload)
@@ -136,7 +137,7 @@ func (srv *Server) handleCommands() {
 			if err != nil {
 				cmd.client.Write([]byte(err.Error() + "\n"))
 			} else {
-				cmd.client.Write([]byte("success\n"))
+				cmd.client.Write([]byte(SUCCESS + "\n"))
 			}
 		default:
 			cmd.client.Write([]byte(fmt.Sprintf("Unknown command: %s", cmd.operation)))

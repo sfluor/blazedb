@@ -45,17 +45,19 @@ The sample configuration can be found in server/config.template.toml and contain
 # log_file = "/tmp/blazedb.log"
 
 # Where to save data on disk
-# save_directory = "/tmp"
+# save_file = "/tmp/blaze.dump"
+
+# How often we need to save data on disk
+# save_period = "1m"
 
 # Debug mode (0 or 1)
 # debug = 0
-
 ```
 
 
 ## Todos
 
-- [ ] Save database to disk
+- [x] Save database to disk
 - [x] Log file
 - [x] Configuration file
 - [ ] Tests

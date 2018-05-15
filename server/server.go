@@ -2,11 +2,13 @@ package server
 
 import (
 	"bufio"
+	"encoding/gob"
 	"fmt"
 	"io"
 	"net"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/sirupsen/logrus"
 )
@@ -43,7 +45,7 @@ func New(conf *Config) *Server {
 
 	lg := logrus.New()
 
-	file, err := os.OpenFile(conf.LogFile, os.O_CREATE|os.O_WRONLY, 0666)
+	file, err := os.OpenFile(conf.LogFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Couldn't open the log file: %s", err)
@@ -57,13 +59,15 @@ func New(conf *Config) *Server {
 	}
 
 	return &Server{ln, newDatabase(), make(chan *command, conf.MaxQueueSize), conf, lg}
-
 }
 
 func (srv *Server) Start() {
 	fmt.Printf("Starting a blazedb server on port %v\n", srv.conf.Port)
 
+	srv.loadState()
+
 	go srv.handleCommands()
+	go srv.handleDumps()
 
 	for {
 		conn, err := srv.ln.Accept()
@@ -164,4 +168,52 @@ func (srv *Server) handleConnection(conn net.Conn) {
 		}
 
 	}
+}
+
+func (srv *Server) handleDumps() {
+	ticker := time.NewTicker(srv.conf.SavePeriod)
+
+	for {
+		<-ticker.C
+		srv.dumpState()
+	}
+}
+
+func (srv *Server) loadState() {
+	file, err := os.OpenFile(srv.conf.SaveFile, os.O_RDONLY, 0666)
+	defer file.Close()
+
+	if err != nil {
+		srv.lg.Errorf("Couldn't open the dump file: %s", err)
+		return
+	}
+
+	dec := gob.NewDecoder(file)
+
+	err = dec.Decode(srv.db)
+
+	if err != nil {
+		if err != io.EOF {
+			srv.lg.Errorf("Couldn't decode the database during dump operation: %s", err)
+		}
+	}
+}
+
+func (srv *Server) dumpState() {
+	file, err := os.OpenFile(srv.conf.SaveFile, os.O_CREATE|os.O_WRONLY, 0666)
+	defer file.Close()
+
+	if err != nil {
+		srv.lg.Errorf("Couldn't open the dump file: %s", err)
+		return
+	}
+
+	enc := gob.NewEncoder(file)
+
+	err = enc.Encode(srv.db)
+	if err != nil {
+		srv.lg.Errorf("Couldn't encode the database during dump operation: %s", err)
+	}
+
+	srv.lg.Info("Saved the database state")
 }

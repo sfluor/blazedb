@@ -4,16 +4,18 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"time"
 
 	"github.com/BurntSushi/toml"
 )
 
 type Config struct {
-	Port          uint   `toml:"port"`
-	MaxQueueSize  uint   `toml:"max_queue_size"`
-	LogFile       string `toml:"log_file"`
-	SaveDirectory string `toml:"save_directory"`
-	Debug         uint   `toml:"debug"`
+	Port         uint          `toml:"port"`
+	MaxQueueSize uint          `toml:"max_queue_size"`
+	LogFile      string        `toml:"log_file"`
+	SaveFile     string        `toml:"save_file"`
+	Debug        uint          `toml:"debug"`
+	SavePeriod   time.Duration `toml:"save_period"`
 }
 
 func LoadConfig(filePath string) *Config {
@@ -42,8 +44,12 @@ func LoadConfig(filePath string) *Config {
 		conf.LogFile = "/tmp/blazedb.log"
 	}
 
-	if conf.SaveDirectory == "" {
-		conf.SaveDirectory = "/tmp"
+	if conf.SaveFile == "" {
+		conf.SaveFile = "/tmp/db.blaze"
+	}
+
+	if conf.SavePeriod == 0 {
+		conf.SavePeriod = 1 * time.Minute
 	}
 
 	return conf

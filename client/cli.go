@@ -6,6 +6,7 @@ import (
 	"github.com/chzyer/readline"
 )
 
+// EXIT CLI code
 const EXIT = "exit"
 
 var completer = readline.NewPrefixCompleter(
@@ -16,6 +17,7 @@ var completer = readline.NewPrefixCompleter(
 	readline.PcItem("exit"),
 )
 
+// StartCLI start the CLI loop printing a prompt line
 func (c *Client) StartCLI() {
 	rl, err := readline.NewEx(&readline.Config{
 		Prompt:          ">>> ",

@@ -11,10 +11,12 @@ import (
 	"github.com/sfluor/blazedb/server"
 )
 
+// Client represents the client structure of blazedb
 type Client struct {
 	conn net.Conn
 }
 
+// New instanciates a New client that connects to the given address
 func New(addr string) *Client {
 	conn, err := net.Dial("tcp", addr)
 
@@ -53,28 +55,34 @@ func (c *Client) assertSuccess(data []byte, err error) error {
 	return nil
 }
 
+// Queryf allows to send a raw command to the blazedb server
+// It works exactly the same as Printf, Sprintf, Fprintf...
 func (c *Client) Queryf(format string, a ...interface{}) ([]byte, error) {
 	fmt.Fprintf(c.conn, format, a...)
 
 	return c.read()
 }
 
+// Get retrieves the value for the given key
 func (c *Client) Get(key string) ([]byte, error) {
 	return c.Queryf("get %s\n", key)
 }
 
+// Set put a new value for the given key (but if there already is a value an error is throwed, see Update to update a value)
 func (c *Client) Set(key string, value []byte) error {
 	data, err := c.Queryf("set %s %s\n", key, value)
 
 	return c.assertSuccess(data, err)
 }
 
+// Update updates the given key value
 func (c *Client) Update(key string, value []byte) error {
 	data, err := c.Queryf("update %s %s\n", key, value)
 
 	return c.assertSuccess(data, err)
 }
 
+// Delete deletes the given (key, value) pair matching the given key
 func (c *Client) Delete(key string) error {
 	data, err := c.Queryf("delete %s\n", key)
 

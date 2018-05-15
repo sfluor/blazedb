@@ -9,6 +9,7 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
+// Config struct
 type Config struct {
 	Port         uint          `toml:"port"`
 	MaxQueueSize uint          `toml:"max_queue_size"`
@@ -18,6 +19,8 @@ type Config struct {
 	SavePeriod   time.Duration `toml:"save_period"`
 }
 
+// LoadConfig loads the configuration from the given file path and returns it
+// It takes care of setting some attributes to their default values if they are not set
 func LoadConfig(filePath string) *Config {
 	data, err := ioutil.ReadFile(filePath)
 

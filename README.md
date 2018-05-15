@@ -1,5 +1,7 @@
 # blazedb
 
+[![Build Status](https://travis-ci.com/sfluor/blazedb.svg?branch=master)](https://travis-ci.com/sfluor/blazedb)
+
 BlazeDB is a simple key value storage system.
 
 It uses a tcp server to communicate with clients with the following available commands:

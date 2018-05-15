@@ -60,5 +60,8 @@ The sample configuration can be found in server/config.template.toml and contain
 - [x] Save database to disk
 - [x] Log file
 - [x] Configuration file
+- [ ] Add a go client
 - [ ] Tests
 - [ ] Code example
+- [ ] Add a parameter to dump the state every N write commands
+- [ ] Add SSL support

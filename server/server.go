@@ -14,12 +14,13 @@ import (
 )
 
 const (
-	SET     = "set"
-	GET     = "get"
-	UPDATE  = "update"
-	DELETE  = "delete"
-	SUCCESS = "success"
+	SET    = "set"
+	GET    = "get"
+	UPDATE = "update"
+	DELETE = "delete"
 )
+
+var SUCCESS = []byte("success")
 
 type command struct {
 	operation string
@@ -81,6 +82,14 @@ func (srv *Server) Start() {
 	}
 }
 
+func (cmd *command) answer(data []byte, err error) {
+	if err != nil {
+		cmd.client.Write([]byte(err.Error() + "\n"))
+	} else {
+		cmd.client.Write(append(data, '\n'))
+	}
+}
+
 func (srv *Server) handleCommands() {
 	for {
 		cmd := <-srv.commands
@@ -94,11 +103,8 @@ func (srv *Server) handleCommands() {
 		switch cmd.operation {
 		case GET:
 			data, err := srv.db.get(cmd.payload)
-			if err != nil {
-				cmd.client.Write([]byte(err.Error() + "\n"))
-			} else {
-				cmd.client.Write(append(data, '\n'))
-			}
+
+			cmd.answer(data, err)
 
 		case SET:
 			chunks := strings.SplitN(cmd.payload, " ", 2)
@@ -110,11 +116,7 @@ func (srv *Server) handleCommands() {
 
 			err := srv.db.set(chunks[0], []byte(chunks[1]))
 
-			if err != nil {
-				cmd.client.Write([]byte(err.Error() + "\n"))
-			} else {
-				cmd.client.Write([]byte(SUCCESS + "\n"))
-			}
+			cmd.answer(SUCCESS, err)
 
 		case UPDATE:
 			chunks := strings.SplitN(cmd.payload, " ", 2)
@@ -126,19 +128,13 @@ func (srv *Server) handleCommands() {
 
 			err := srv.db.update(chunks[0], []byte(chunks[1]))
 
-			if err != nil {
-				cmd.client.Write([]byte(err.Error() + "\n"))
-			} else {
-				cmd.client.Write([]byte(SUCCESS + "\n"))
-			}
+			cmd.answer(SUCCESS, err)
+
 		case DELETE:
 			err := srv.db.delete(cmd.payload)
 
-			if err != nil {
-				cmd.client.Write([]byte(err.Error() + "\n"))
-			} else {
-				cmd.client.Write([]byte(SUCCESS + "\n"))
-			}
+			cmd.answer(SUCCESS, err)
+
 		default:
 			cmd.client.Write([]byte(fmt.Sprintf("Unknown command: %s", cmd.operation)))
 		}

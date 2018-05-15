@@ -36,52 +36,44 @@ func (c *Client) read() ([]byte, error) {
 	return bytes.TrimSpace(data), err
 }
 
-func (c *Client) assertSuccess(data []byte) error {
-	if !reflect.DeepEqual(data, []byte(server.SUCCESS)) {
+func (c *Client) assertSuccess(data []byte, err error) error {
+
+	if err != nil {
+		return err
+	}
+
+	if !reflect.DeepEqual(data, server.SUCCESS) {
 		return fmt.Errorf("Operation delete failed: %s", data)
 	}
 
 	return nil
 }
 
-func (c *Client) Get(key string) ([]byte, error) {
-	fmt.Fprintf(c.conn, "get %s\n", key)
+func (c *Client) Queryf(format string, a ...interface{}) ([]byte, error) {
+	fmt.Fprintf(c.conn, format, a...)
 
 	return c.read()
 }
 
+func (c *Client) Get(key string) ([]byte, error) {
+	return c.Queryf("get %s\n", key)
+}
+
 func (c *Client) Set(key string, value []byte) error {
-	fmt.Fprintf(c.conn, "set %s %s\n", key, value)
+	data, err := c.Queryf("set %s %s\n", key, value)
 
-	data, err := c.read()
-
-	if err != nil {
-		return err
-	}
-
-	return c.assertSuccess(data)
+	return c.assertSuccess(data, err)
 }
 
 func (c *Client) Update(key string, value []byte) error {
-	fmt.Fprintf(c.conn, "update %s %s\n", key, value)
+	data, err := c.Queryf("update %s %s\n", key, value)
 
-	data, err := c.read()
-
-	if err != nil {
-		return err
-	}
-
-	return c.assertSuccess(data)
+	return c.assertSuccess(data, err)
 }
 
 func (c *Client) Delete(key string) error {
-	fmt.Fprintf(c.conn, "delete %s\n", key)
+	data, err := c.Queryf("delete %s\n", key)
 
-	data, err := c.read()
+	return c.assertSuccess(data, err)
 
-	if err != nil {
-		return err
-	}
-
-	return c.assertSuccess(data)
 }

@@ -1,0 +1,6 @@
+# Default blazedb configuration
+
+# port = 9876
+# max_queue_size = 100
+# log_file = "/tmp/blazedb.log"
+# save_directory = "/tmp"

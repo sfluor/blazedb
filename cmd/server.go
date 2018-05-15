@@ -5,19 +5,20 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var srvPort *uint
+var configPath *string
 
 func init() {
 	rootCmd.AddCommand(srvCmd)
 	// Flags
-	srvPort = srvCmd.Flags().UintP("port", "p", 9876, "Port that blazedb server need to listen on")
+	configPath = srvCmd.Flags().StringP("config", "c", "/etc/blazedb.toml", "Config path")
 }
 
 var srvCmd = &cobra.Command{
 	Use:   "server",
 	Short: "Start a blazedb server",
 	Run: func(cmd *cobra.Command, args []string) {
-		srv := server.New(*srvPort)
+		config := server.LoadConfig(*configPath)
+		srv := server.New(config.Port)
 		srv.Start()
 	},
 }

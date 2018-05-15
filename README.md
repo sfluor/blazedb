@@ -22,10 +22,30 @@ get x
 1
 ```
 
+## Starting the server
+
+To start the blazedb server simply do
+
+`blazedb server -c <path_to_the_config_file>`
+
+## Configuration
+
+The sample configuration can be found in server/config.template.toml and contains the following:
+
+```
+# Default blazedb configuration
+
+port = 9876
+max_queue_size = 100
+log_file = "/tmp/blazedb.log"
+save_directory = "/tmp"
+```
+
+
 ## Todos
 
 - [ ] Save database to disk
 - [ ] Log file
-- [ ] Configuration file
+- [x] Configuration file
 - [ ] Tests
 - [ ] Code example

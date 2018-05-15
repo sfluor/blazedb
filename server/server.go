@@ -77,6 +77,10 @@ func (srv *Server) Start() {
 		conn, err := srv.ln.Accept()
 
 		if err != nil {
+			if !srv.UP {
+				return
+			}
+
 			fmt.Fprintf(os.Stderr, "Couldn't accept the tcp connection: %v\n", err)
 		} else {
 			go srv.handleConnection(conn)

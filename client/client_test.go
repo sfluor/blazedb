@@ -20,7 +20,7 @@ var testConfig = &server.Config{
 
 func wrapper(f func(*Client)) {
 	srv := server.New(testConfig)
-	client := New(fmt.Sprintf("localhost:%v", srv.GetPort()))
+	client := New(fmt.Sprintf("0.0.0.0:%v", srv.GetPort()))
 	go srv.Start()
 	for !srv.UP {
 	}

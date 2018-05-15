@@ -7,6 +7,8 @@ import (
 	"net"
 	"os"
 	"strings"
+
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -26,24 +28,40 @@ type Server struct {
 	ln       net.Listener
 	db       *database
 	commands chan *command
-	port     uint
+	conf     *Config
+	lg       *logrus.Logger
 }
 
-func New(port uint) *Server {
+func New(conf *Config) *Server {
 
-	ln, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+	ln, err := net.Listen("tcp", fmt.Sprintf(":%d", conf.Port))
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Couldn't start tcp server on port %v: %v\n", err, port)
+		fmt.Fprintf(os.Stderr, "Couldn't start tcp server on port %v: %v\n", err, conf.Port)
 		os.Exit(1)
 	}
-	// TODO use a parameter for the buffered channel
-	return &Server{ln, newDatabase(), make(chan *command, 100), port}
+
+	lg := logrus.New()
+
+	file, err := os.OpenFile(conf.LogFile, os.O_CREATE|os.O_WRONLY, 0666)
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Couldn't open the log file: %s", err)
+		os.Exit(1)
+	}
+
+	lg.Out = file
+
+	if conf.Debug == 1 {
+		lg.SetLevel(logrus.DebugLevel)
+	}
+
+	return &Server{ln, newDatabase(), make(chan *command, conf.MaxQueueSize), conf, lg}
 
 }
 
 func (srv *Server) Start() {
-	fmt.Printf("Starting a blazedb server on port %v\n", srv.port)
+	fmt.Printf("Starting a blazedb server on port %v\n", srv.conf.Port)
 
 	go srv.handleCommands()
 
@@ -51,7 +69,7 @@ func (srv *Server) Start() {
 		conn, err := srv.ln.Accept()
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Couldn't accept a tcp connection: %v\n", err)
+			fmt.Fprintf(os.Stderr, "Couldn't accept the tcp connection: %v\n", err)
 		}
 
 		go srv.handleConnection(conn)
@@ -61,6 +79,13 @@ func (srv *Server) Start() {
 func (srv *Server) handleCommands() {
 	for {
 		cmd := <-srv.commands
+
+		srv.lg.WithFields(logrus.Fields{
+			"operation": cmd.operation,
+			"payload":   cmd.payload,
+			"client":    cmd.client.RemoteAddr(),
+		}).Debug("Received a command")
+
 		switch cmd.operation {
 		case GET:
 			data, err := srv.db.get(cmd.payload)
@@ -116,7 +141,7 @@ func (srv *Server) handleCommands() {
 }
 
 func (srv *Server) handleConnection(conn net.Conn) {
-	fmt.Printf("New connection from: %v\n", conn.RemoteAddr())
+	srv.lg.WithField("client", conn.RemoteAddr()).Info("New connection")
 
 	for {
 		message, err := bufio.NewReader(conn).ReadString('\n')

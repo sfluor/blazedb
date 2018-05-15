@@ -35,17 +35,28 @@ The sample configuration can be found in server/config.template.toml and contain
 ```
 # Default blazedb configuration
 
-port = 9876
-max_queue_size = 100
-log_file = "/tmp/blazedb.log"
-save_directory = "/tmp"
+# Port on which to listen for the blazedb server
+# port = 9876
+
+# Max queue size for the blazedb server commands
+# max_queue_size = 100
+
+# The logfile
+# log_file = "/tmp/blazedb.log"
+
+# Where to save data on disk
+# save_directory = "/tmp"
+
+# Debug mode (0 or 1)
+# debug = 0
+
 ```
 
 
 ## Todos
 
 - [ ] Save database to disk
-- [ ] Log file
+- [x] Log file
 - [x] Configuration file
 - [ ] Tests
 - [ ] Code example

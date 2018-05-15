@@ -18,7 +18,7 @@ var srvCmd = &cobra.Command{
 	Short: "Start a blazedb server",
 	Run: func(cmd *cobra.Command, args []string) {
 		config := server.LoadConfig(*configPath)
-		srv := server.New(config.Port)
+		srv := server.New(config)
 		srv.Start()
 	},
 }

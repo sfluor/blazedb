@@ -13,6 +13,7 @@ type Config struct {
 	MaxQueueSize  uint   `toml:"max_queue_size"`
 	LogFile       string `toml:"log_file"`
 	SaveDirectory string `toml:"save_directory"`
+	Debug         uint   `toml:"debug"`
 }
 
 func LoadConfig(filePath string) *Config {
